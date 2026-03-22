@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY = process.env.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;
 
 app.post("/analyze", async (req, res) => {
   const text = req.body.text;

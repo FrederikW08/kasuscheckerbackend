@@ -8,7 +8,7 @@ app.use(express.json());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Stop if API key is missing
+// Stop deployment if API key missing
 if (!OPENAI_API_KEY) {
   console.error("ERROR: OPENAI_API_KEY not set in environment variables!");
   process.exit(1);
@@ -19,11 +19,10 @@ app.post("/analyze", async (req, res) => {
   const text = req.body.text;
   if (!text) return res.status(400).json({ error: "Ingen tekst sendt" });
 
-  // Prompt that forces strict JSON output
-  const prompt = `Giv kun JSON uden ekstra tekst eller forklaringer. Format:
+  const prompt = `Giv kun JSON uden forklaringer. Format:
 [{"word": "ORD", "case": "KASUS"}]
 
-Angiv kasus for hvert ord i denne sætning (tysk, latin eller dansk) på dansk.
+Angiv kasus for hvert ord i sætningen (tysk, latin eller dansk) på dansk.
 Sætning: ${text}`;
 
   try {
@@ -34,7 +33,7 @@ Sætning: ${text}`;
         "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",       // works with all keys
+        model: "gpt-3.5-turbo",
         messages: [{ role: "user", content: prompt }],
         temperature: 0
       })
@@ -42,29 +41,26 @@ Sætning: ${text}`;
 
     const data = await response.json();
 
-    // Log raw response for debugging
+    // Log full response for debugging
     console.log("OpenAI full response:", data);
 
     if (!data.choices || !data.choices[0].message || !data.choices[0].message.content) {
       return res.status(500).json({ error: "Fejl fra OpenAI API" });
     }
 
-    const content = data.choices[0].message.content;
-
-    // Parse GPT JSON safely
     let analysis;
     try {
-      analysis = JSON.parse(content);
+      analysis = JSON.parse(data.choices[0].message.content);
     } catch (err) {
       console.log("JSON parse error:", err);
-      console.log("Raw GPT content:", content);
+      console.log("Raw GPT output:", data.choices[0].message.content);
       return res.status(500).json({ error: "Kunne ikke parse OpenAI output" });
     }
 
     res.json({ analysis });
 
   } catch (err) {
-    console.log("OpenAI fetch error:", err);
+    console.log("Fetch error:", err);
     res.status(500).json({ error: "Fejl fra OpenAI API" });
   }
 });

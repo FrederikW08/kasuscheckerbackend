@@ -41,9 +41,10 @@ Sætning: ${text}`;
 
     const data = await response.json();
 
-    // Log full response for debugging
+    // Debug: log OpenAI full response
     console.log("OpenAI full response:", data);
 
+    // Handle missing or invalid output
     if (!data.choices || !data.choices[0].message || !data.choices[0].message.content) {
       return res.status(500).json({ error: "Fejl fra OpenAI API" });
     }

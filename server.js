@@ -37,6 +37,8 @@ app.post("/analyze", async (req, res) => {
   }
 });
 
+console.log("OpenAI raw response:", content);
+
 app.get("/", (req, res) => res.send("Kasus API kører!"));
 
 app.listen(process.env.PORT || 10000, () => console.log("Server kører"));
